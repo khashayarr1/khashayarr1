@@ -1,0 +1,145 @@
+# -*- coding: utf-8 -*-
+"""Builds the NeuroGum.ir design system artboards."""
+import os, pathlib
+
+ROOT = pathlib.Path("/root/neurogum-ds")
+
+FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
+         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+         '<link href="https://fonts.googleapis.com/css2?'
+         'family=Vazirmatn:wght@100..900&'
+         'family=Noto+Kufi+Arabic:wght@100..900&'
+         'family=Inter:wght@400..900&display=swap" rel="stylesheet">')
+
+TOKENS = """
+:root{
+  /* ---- Brand (locked, from the playbook) ---- */
+  --ng-cyan:#00C2DE;        /* Brand Blue  — GROUND ONLY. never carries white text (2.15:1) */
+  --ng-electric:#146FF8;    /* Electric Blue — CTA fills and links only */
+  --ng-white:#FFFFFF;
+
+  /* ---- Ink: the workhorse. All Farsi text, every ground. ---- */
+  --ng-ink:#071B33;
+  --ng-ink-2:#0E2A4A;
+  --ng-ink-70:rgba(7,27,51,.70);
+  --ng-ink-55:rgba(7,27,51,.55);
+  --ng-ink-12:rgba(7,27,51,.12);
+
+  /* ---- Studio: warm neutrals. The flatlay ground. ---- */
+  --ng-bone:#F2EEE7;
+  --ng-sand:#E3DBD0;
+  --ng-stone:#C9BEB0;
+  --ng-clay:#8A7C6D;
+
+  /* ---- Cool paper: mechanism / diagram slides ---- */
+  --ng-paper:#F5F8F9;
+
+  /* ---- On-ink inverses ---- */
+  --ng-on-ink:#FFFFFF;
+  --ng-on-ink-70:rgba(255,255,255,.72);
+  --ng-on-ink-40:rgba(255,255,255,.40);
+
+  /* ---- Type families (3 roles + Latin) ---- */
+  --ng-font-display:"Vazirmatn","Noto Kufi Arabic",system-ui,sans-serif;
+  --ng-font-text:"Vazirmatn",system-ui,sans-serif;
+  --ng-font-meta:"Vazirmatn",system-ui,sans-serif;
+  --ng-font-latin:"Inter",system-ui,sans-serif;
+
+  /* ---- Type scale @ 1080px artboard width ---- */
+  /* Leading runs high on every role. Persian stacks dots above and descenders below the
+     baseline, so Latin display leading (.9–1.05) collides. 1.14 is the floor, not a choice. */
+  --ng-t-hero:140px;   --ng-t-hero-lh:1.14;
+  --ng-t-display:104px;--ng-t-display-lh:1.24;
+  --ng-t-title:72px;   --ng-t-title-lh:1.34;
+  --ng-t-lede:52px;    --ng-t-lede-lh:1.55;
+  --ng-t-body:40px;    --ng-t-body-lh:1.78;
+  --ng-t-meta:24px;    --ng-t-meta-lh:1.4;
+
+  /* ---- Space: 8px base, 1080 grid ---- */
+  --ng-margin:88px;    /* artboard side margin, 1080 canvas */
+  --ng-gutter:32px;
+  --ng-r-sm:16px; --ng-r-md:28px; --ng-r-lg:48px; --ng-r-pill:999px;
+}
+
+/* ---- Role classes ---- */
+/* Tracking is 0 on every Farsi role. Persian is a connected script — negative letter-spacing
+   pulls the joins apart and the word stops reading as one shape. Only Latin gets tightened. */
+.ng-hero{font-family:var(--ng-font-display);font-weight:900;font-size:var(--ng-t-hero);
+  line-height:var(--ng-t-hero-lh);letter-spacing:0;}
+.ng-display{font-family:var(--ng-font-display);font-weight:900;font-size:var(--ng-t-display);
+  line-height:var(--ng-t-display-lh);letter-spacing:0;}
+.ng-title{font-family:var(--ng-font-display);font-weight:800;font-size:var(--ng-t-title);
+  line-height:var(--ng-t-title-lh);letter-spacing:0;}
+.ng-lede{font-family:var(--ng-font-text);font-weight:500;font-size:var(--ng-t-lede);
+  line-height:var(--ng-t-lede-lh);letter-spacing:0;}
+.ng-body{font-family:var(--ng-font-text);font-weight:400;font-size:var(--ng-t-body);
+  line-height:var(--ng-t-body-lh);}
+/* Farsi has no uppercase. A label is made with tracking + weight + opacity, never caps. */
+.ng-meta{font-family:var(--ng-font-meta);font-weight:600;font-size:var(--ng-t-meta);
+  line-height:var(--ng-t-meta-lh);letter-spacing:.09em;color:var(--ng-ink-55);}
+.ng-latin{font-family:var(--ng-font-latin);font-weight:700;font-feature-settings:"tnum" 1;
+  letter-spacing:-.01em;direction:ltr;unicode-bidi:isolate;}
+
+/* ---- Grounds ---- */
+.g-bone{background:var(--ng-bone);color:var(--ng-ink);}
+.g-ink{background:var(--ng-ink);color:var(--ng-on-ink);}
+.g-cyan{background:var(--ng-cyan);color:var(--ng-ink);}
+.g-paper{background:var(--ng-paper);color:var(--ng-ink);}
+.g-ink .ng-meta{color:var(--ng-on-ink-70);}
+.g-cyan .ng-meta{color:rgba(7,27,51,.62);}
+
+/* ---- Artboards ---- */
+.art{position:relative;overflow:hidden;flex:none;}
+.art-45{width:1080px;height:1350px;}
+.art-916{width:1080px;height:1920px;}
+.art-11{width:1080px;height:1080px;}
+.pad{position:absolute;inset:0;padding:var(--ng-margin);display:flex;flex-direction:column;}
+"""
+
+# Page chrome (the documentation frame around the artboards)
+SHELL_CSS = """
+*{box-sizing:border-box;}
+body{margin:0;background:#11161C;color:#E7EAEE;
+  font-family:"Inter",system-ui,sans-serif;padding:40px;}
+h1{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px;}
+h2{font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:#7C8CA0;margin:44px 0 14px;}
+p.note{font-size:14px;line-height:1.65;color:#A8B4C2;max-width:74ch;margin:0 0 8px;}
+p.rule{font-size:14px;line-height:1.65;max-width:74ch;margin:10px 0 0;
+  padding:12px 16px;border-radius:10px;background:#182029;border-inline-start:3px solid #00C2DE;color:#D6DEE7;}
+p.rule.bad{border-inline-start-color:#FF6B6B;}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:#1C242E;
+  padding:2px 6px;border-radius:5px;color:#8FD9E8;}
+.row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;margin-top:18px;}
+.frame{background:#0B0F14;border:1px solid #232C36;border-radius:14px;padding:14px;}
+.frame > .cap{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:#6E7E92;margin-bottom:10px;}
+.scaler{overflow:hidden;}
+.scaler > *{transform-origin:top left;}
+table{border-collapse:collapse;font-size:13px;margin-top:14px;width:100%;max-width:840px;}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid #232C36;}
+th{color:#7C8CA0;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+.pass{color:#5FD69A;font-weight:700;}
+.fail{color:#FF7A7A;font-weight:700;}
+.sw{width:100%;height:78px;border-radius:10px;border:1px solid rgba(255,255,255,.09);}
+.swgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:14px;max-width:1000px;margin-top:16px;}
+.swname{font-size:12.5px;font-weight:700;margin-top:8px;}
+.swhex{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#8A97A6;}
+.swuse{font-size:11.5px;color:#7C8CA0;line-height:1.45;margin-top:3px;}
+"""
+
+def scaled(inner, w, h, scale):
+    return (f'<div class="scaler" style="width:{int(w*scale)}px;height:{int(h*scale)}px">'
+            f'<div style="transform:scale({scale})">{inner}</div></div>')
+
+def page(path, group, title, subtitle, body, extra_css=""):
+    html = (f'<!-- @dsCard group="{group}" -->\n'
+            f'<!doctype html><html lang="fa"><head><meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width,initial-scale=1">'
+            f'<title>{title} — NeuroGum.ir</title>{FONTS}'
+            f'<style>{TOKENS}{SHELL_CSS}{extra_css}</style></head><body>'
+            f'<h1>{title}</h1><p class="note">{subtitle}</p>{body}</body></html>')
+    p = ROOT / path
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(html, encoding="utf-8")
+    return path
